@@ -1,0 +1,1 @@
+console.log('WebX Management landing page loaded.'); 

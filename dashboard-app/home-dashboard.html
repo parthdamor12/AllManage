@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Dashboard | WebX Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="../index.html">WebX Management</a>
+      <span class="navbar-text text-white">Home Dashboard</span>
+    </div>
+  </nav>
+  <div class="container">
+    <div class="row mb-4">
+      <div class="col-6 col-md-3 mb-2">
+        <div class="card bg-secondary text-white">
+          <div class="card-body text-center">
+            <div class="fw-bold">Total Employees</div>
+            <div class="display-6" id="totalEmployees">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 mb-2">
+        <div class="card bg-dark text-white">
+          <div class="card-body text-center">
+            <div class="fw-bold">Total Tasks</div>
+            <div class="display-6" id="totalTasks">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2 mb-2">
+        <div class="card bg-success text-white">
+          <div class="card-body text-center">
+            <div class="fw-bold">Completed</div>
+            <div class="display-6" id="completedTasks">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2 mb-2">
+        <div class="card bg-info text-white">
+          <div class="card-body text-center">
+            <div class="fw-bold">In Progress</div>
+            <div class="display-6" id="inProgressTasks">0</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-2 mb-2">
+        <div class="card bg-warning">
+          <div class="card-body text-center">
+            <div class="fw-bold">Pending</div>
+            <div class="display-6" id="pendingTasks">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row mb-4">
+      <div class="col-12 col-md-6 mx-auto">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title text-center">Task Status Distribution</h5>
+            <canvas id="taskPieChart" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Quick Stats</h5>
+            <ul class="list-group list-group-flush" id="quickStatsList">
+              <li class="list-group-item">Loading...</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+    import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+    const firebaseConfig = {
+      apiKey: "AIzaSyC3zsARxErT3HCGRQ7ckwDIrdo6xZ2wF4E",
+      authDomain: "management-4bc63.firebaseapp.com",
+      projectId: "management-4bc63",
+      storageBucket: "management-4bc63.appspot.com",
+      messagingSenderId: "405137633578",
+      appId: "1:405137633578:web:86f0bacbc99abcee976e53",
+      measurementId: "G-MCX25WKJ0F"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    async function loadDashboard() {
+      // Employees
+      const usersSnap = await getDocs(collection(db, 'users'));
+      let totalEmployees = 0;
+      usersSnap.forEach(doc => {
+        const data = doc.data();
+        if (data.role === 'employee') totalEmployees++;
+      });
+      document.getElementById('totalEmployees').innerText = totalEmployees;
+      // Tasks
+      const tasksSnap = await getDocs(collection(db, 'tasks'));
+      let totalTasks = 0, completed = 0, inProgress = 0, pending = 0;
+      let assignCount = 0;
+      let allAssignees = new Set();
+      tasksSnap.forEach(doc => {
+        const data = doc.data();
+        totalTasks++;
+        if (data.status === 'Completed') completed++;
+        else if (data.status === 'In Progress') inProgress++;
+        else if (data.status === 'Pending') pending++;
+        if (data.assignedTo) {
+          assignCount++;
+          allAssignees.add(data.assignedTo);
+        }
+      });
+      document.getElementById('totalTasks').innerText = totalTasks;
+      document.getElementById('completedTasks').innerText = completed;
+      document.getElementById('inProgressTasks').innerText = inProgress;
+      document.getElementById('pendingTasks').innerText = pending;
+      // Pie chart
+      const ctx = document.getElementById('taskPieChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Completed', 'In Progress', 'Pending'],
+          datasets: [{
+            data: [completed, inProgress, pending],
+            backgroundColor: ['#198754', '#0dcaf0', '#ffc107']
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+      // Quick stats
+      const quickStats = [
+        `Assigned Tasks: <b>${assignCount}</b>`,
+        `Employees with at least 1 task: <b>${allAssignees.size}</b>`,
+        `Unassigned Tasks: <b>${totalTasks - assignCount}</b>`
+      ];
+      document.getElementById('quickStatsList').innerHTML = quickStats.map(s => `<li class='list-group-item'>${s}</li>`).join('');
+    }
+    loadDashboard();
+  </script>
+</body>
+</html> 

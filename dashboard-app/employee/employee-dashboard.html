@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Dashboard | WebX Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+  /* Toggle Switch CSS (inspired by screenshot) */
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #dc3545;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 34px;
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 50%;
+  }
+  input:checked + .slider {
+    background-color: #28a745;
+  }
+  input:checked + .slider:before {
+    -webkit-transform: translateX(26px);
+    -ms-transform: translateX(26px);
+    transform: translateX(26px);
+  }
+  .slider.round { border-radius: 34px; }
+  .slider.round:before { border-radius: 50%; }
+  #onlineToggleLabel {
+    font-size: 1.1rem;
+    vertical-align: middle;
+    color: #fff;
+    text-shadow: 0 1px 2px #0002;
+  }
+  /* Professional Dark/Light Mode Toggle Styles */
+  .checkbox { display: none; }
+  .toggle {
+    position: relative; display: inline-block; width: 48px; height: 26px; background: #484848; border: 1.5px solid #222; border-radius: 50px; padding: 2px 2px; text-align: left; cursor: pointer; transition: 0.25s; box-shadow: 0 2px 8px #0001;
+    vertical-align: middle; margin-bottom: 0; outline: none;
+  }
+  .toggle:focus { outline: 2px solid #007bff; }
+  .disc { display: inline-block; position: relative; background: #FFFDF2; border: 2px solid #E0E3C4; width: 20px; height: 20px; border-radius: 50%; left: 0; transform: rotate(0); transition: 0.3s; box-shadow: 0 1px 4px #0002; }
+  .disc i { position: absolute; background: #EFEEDB; border: 1.5px solid #E0E3C4; border-radius: 50%; transition: 0.3s; }
+  .disc i:first-of-type { width: 3px; height: 3px; left: 1px; top: 2px; }
+  .disc i:nth-of-type(2) { width: 5px; height: 5px; right: 2px; top: 0; }
+  .disc i:last-of-type { width: 4px; height: 4px; right: 3px; bottom: 1px; }
+  .cloud { display: inline-block; position: absolute; top: 7px; left: 8px; background: #fff; border: 1.5px solid #D3D3D3; border-radius: 10px; width: 12px; height: 6px; transform: scale(0); opacity: 0; transition: transform .5s cubic-bezier(0.67, -0.01, 0.27, 1.45); }
+  .cloud__sub1, .cloud__sub2 { content: ''; display: block; position: relative; border: 1.5px solid #D3D3D3; border-radius: 100%; border-right-color: transparent; border-bottom-color: transparent; }
+  .cloud__sub1 { top: -3px; right: -1px; width: 6px; height: 6px; transform: rotateZ(47deg); }
+  .cloud__sub2 { top: -8px; right: -5px; width: 3px; height: 3px; transform: rotateZ(51deg); }
+  .star { position: absolute; background: #fff; border-radius: 50%; transform: scale(1); transition: transform 0.5s cubic-bezier(0.67, -0.01, 0.27, 1.8); }
+  .star:first-of-type { width: 1.5px; height: 1.5px; right: 18px; top: 2px; transition-delay: 0.1s; }
+  .star:nth-of-type(2) { width: 2px; height: 2px; right: 16px; bottom: 2px; transition-delay: 0.1s; }
+  .star:nth-of-type(3) { width: 1.5px; height: 1.5px; right: 12px; top: 5px; transition-delay: 0.1s; }
+  .star:nth-of-type(4) { width: 1.5px; height: 1.5px; right: 9px; top: 8px; transition-delay: 0.1s; }
+  .star:nth-of-type(5) { width: 1.5px; height: 1.5px; right: 6px; top: 2px; transition-delay: 0.05s; }
+  .star:nth-of-type(6) { width: 2px; height: 2px; right: 2px; top: 7px; transition-delay: 0.15s; }
+  .star:nth-of-type(7) { width: 1.5px; height: 1.5px; right: 4px; bottom: 3px; transition-delay: 0.25s; }
+  .checkbox:checked + .toggle { background: #C0E6F6; border-color: #83C2D7; }
+  .checkbox:checked + .toggle .disc { background: #F5EB42; border-color: #E3C64C; left: 20px; transform: rotate(110deg); }
+  .checkbox:checked + .toggle .disc i { opacity: 0; }
+  .checkbox:checked + .toggle .cloud { opacity: 1; transform: scale(1); }
+  .checkbox:checked + .toggle .star { opacity: 0; transform: scale(0); }
+  /* Dark/Light Theme Styles */
+  body.dark-mode { background: #181c1f !important; color: #f1f1f1 !important; }
+  body.dark-mode .navbar { background: #23272b !important; }
+  body.dark-mode .card, body.dark-mode .bg-light, body.dark-mode .table, body.dark-mode .table-light, body.dark-mode .table-bordered, body.dark-mode .table-hover, body.dark-mode .table-striped, body.dark-mode .page-section { background: #23272b !important; color: #f1f1f1 !important; }
+  body.dark-mode .form-control, body.dark-mode .form-control-sm { background: #23272b !important; color: #f1f1f1 !important; border-color: #444 !important; }
+  body.dark-mode .btn-light { background: #444 !important; color: #fff !important; }
+  body.dark-mode .btn-primary { background: #007bff !important; }
+  body.dark-mode .progress { background: #333 !important; }
+  body.dark-mode .progress-bar { background: #007bff !important; color: #fff !important; }
+  body.dark-mode .badge.bg-info { background: #17a2b8 !important; color: #fff !important; }
+  body.dark-mode .badge.bg-success { background: #28a745 !important; color: #fff !important; }
+  body.dark-mode .badge.bg-warning { background: #ffc107 !important; color: #222 !important; }
+  body.dark-mode .badge.bg-dark { background: #111 !important; color: #fff !important; }
+  body.dark-mode .table-bordered td, body.dark-mode .table-bordered th { border-color: #444 !important; }
+  body.dark-mode .table-light th { background: #23272b !important; color: #f1f1f1 !important; }
+  body.dark-mode .shadow, body.dark-mode .shadow-sm { box-shadow: none !important; }
+  body.dark-mode .bg-primary { background: #23272b !important; }
+  body.dark-mode .text-muted { color: #aaa !important; }
+  body.dark-mode .form-check-label { color: #f1f1f1 !important; }
+  body.dark-mode .alert { background: #23272b !important; color: #f1f1f1 !important; border-color: #444 !important; }
+  body.dark-mode .sidebar { background: #181c1f !important; color: #f1f1f1 !important; }
+  body.dark-mode .sidebar .nav-link { color: #f1f1f1 !important; }
+  body.dark-mode .sidebar .nav-link.active, body.dark-mode .sidebar .nav-link:hover { background: #23272b !important; color: #ffc107 !important; }
+  /* Navbar alignment for toggle */
+  #themeToggleWrap { display: flex; align-items: center; height: 34px; }
+  #themeToggleWrap .toggle { margin-bottom: 0; box-shadow: 0 2px 8px #0001; }
+  #themeToggleWrap .toggle:focus { outline: 2px solid #007bff; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="../../index.html">WebX Management</a>
+      <div class="d-flex align-items-center">
+        <div class="me-3" id="onlineToggleWrap">
+          <label class="switch">
+            <input type="checkbox" id="onlineToggle">
+            <span class="slider round"></span>
+          </label>
+          <span id="onlineToggleLabel" class="ms-2 fw-bold">Offline</span>
+        </div>
+        <div class="me-3" id="themeToggleWrap">
+          <input class="checkbox" id="themeCheckbox" type="checkbox">
+          <label class="toggle" for="themeCheckbox">
+            <i class="star"></i>
+            <i class="star"></i>
+            <i class="star"></i>
+            <i class="star"></i>
+            <i class="star"></i>
+            <i class="star"></i>
+            <i class="star"></i>
+            <span class="disc">
+              <i></i><i></i><i></i>
+            </span>
+            <span class="cloud">
+              <i class="cloud__sub1"></i>
+              <i class="cloud__sub2"></i>
+            </span>
+          </label>
+        </div>
+      <a class="btn btn-light" href="employee-login.html">Logout</a>
+      </div>
+    </div>
+  </nav>
+  <div class="container-fluid">
+    <div class="row">
+      <nav class="col-md-3 col-lg-2 d-md-block sidebar">
+        <ul class="nav flex-column mb-4">
+          <li class="nav-item"><a class="nav-link active" href="#" data-page="dashboard">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-page="my-stats">My Stats</a></li>
+        </ul>
+      </nav>
+      <main class="col-md-9 col-lg-10 ms-sm-auto main-content">
+        <div id="page-dashboard" class="page-section">
+          <div class="card p-5 shadow text-center mb-4" style="min-width:350px;max-width:600px;width:100%;">
+            <h1 class="mb-4" id="welcomeMsg">Welcome, Employee!</h1>
+            <h4 class="mb-3">Your Assigned Tasks</h4>
+            <div class="mb-3">
+              <span id="onlineStatusMsg" class="ms-3"></span>
+            </div>
+            <div id="employeeTasksList" class="w-100"></div>
+          </div>
+        </div>
+        <div id="page-my-stats" class="page-section" style="display:none;">
+          <div class="card p-4 shadow text-center mb-4" style="min-width:350px;max-width:600px;width:100%;margin:auto;">
+            <h3 class="mb-3">My Stats</h3>
+            <div class="mb-3 text-start">
+              <b>Employee ID:</b> <span id="statEmployeeId">-</span><br>
+              <b>Name:</b> <span id="statName">-</span>
+              <button id="editNameBtn" class="btn btn-link btn-sm p-0 ms-2" title="Edit Name"><svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M15.502 1.94a1.5 1.5 0 0 1 0 2.12l-1.439 1.439-2.12-2.12 1.439-1.44a1.5 1.5 0 0 1 2.12 0zm-2.56 2.56-8.486 8.486a.5.5 0 0 0-.121.196l-1 3a.5.5 0 0 0 .633.633l3-1a.5.5 0 0 0 .196-.12l8.486-8.487-2.12-2.12z"/></svg></button>
+              <span id="editNameForm" style="display:none;">
+                <input type="text" id="editNameInput" class="form-control form-control-sm d-inline-block" style="width:140px;max-width:60%;margin-left:8px;" />
+                <button id="saveNameBtn" class="btn btn-success btn-sm ms-1">Save</button>
+                <button id="cancelNameBtn" class="btn btn-secondary btn-sm ms-1">Cancel</button>
+              </span><br>
+              <b>Email:</b> <span id="statEmail">-</span><br>
+              <b>Location:</b> <span id="statLocation">-</span>
+            </div>
+            <div class="row mb-3">
+              <div class="col">
+                <div class="card bg-light mb-2"><div class="card-body"><b>Total Tasks</b><br><span id="statTotalTasks" class="fs-4">0</span></div></div>
+              </div>
+              <div class="col">
+                <div class="card bg-light mb-2"><div class="card-body"><b>Completed</b><br><span id="statCompletedTasks" class="fs-4">0</span></div></div>
+              </div>
+              <div class="col">
+                <div class="card bg-light mb-2"><div class="card-body"><b>Pending</b><br><span id="statPendingTasks" class="fs-4">0</span></div></div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <canvas id="statTasksChart" height="120"></canvas>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
+    import { getFirestore, collection, getDocs, updateDoc, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+    const firebaseConfig = {
+      apiKey: "AIzaSyC3zsARxErT3HCGRQ7ckwDIrdo6xZ2wF4E",
+      authDomain: "management-4bc63.firebaseapp.com",
+      projectId: "management-4bc63",
+      storageBucket: "management-4bc63.appspot.com",
+      messagingSenderId: "405137633578",
+      appId: "1:405137633578:web:86f0bacbc99abcee976e53",
+      measurementId: "G-MCX25WKJ0F"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    // Set welcome name
+    const name = localStorage.getItem('employeeName');
+    if (name) {
+      document.getElementById('welcomeMsg').innerText = `Welcome, ${name}!`;
+    }
+    let currentUserUID = null;
+    let currentUserData = null;
+    // Helper: Save user and tasks data to localStorage
+    function saveCache(userData, tasksData) {
+      localStorage.setItem('employeeUserData', JSON.stringify(userData));
+      localStorage.setItem('employeeTasksData', JSON.stringify(tasksData));
+    }
+    // Helper: Load user and tasks data from localStorage
+    function loadCache() {
+      const userData = JSON.parse(localStorage.getItem('employeeUserData') || 'null');
+      const tasksData = JSON.parse(localStorage.getItem('employeeTasksData') || '[]');
+      return { userData, tasksData };
+    }
+    // Render UI from cached or fresh data
+    function renderUI(userData, tasksData) {
+      // Online status
+      const toggle = document.getElementById('onlineToggle');
+      const label = document.getElementById('onlineToggleLabel');
+      if (userData && toggle && label) {
+        if (userData.online) {
+          toggle.checked = true;
+          label.innerText = 'Online';
+          label.style.color = '#28a745';
+          document.getElementById('onlineStatusMsg').innerText = 'You are Online!';
+        } else {
+          toggle.checked = false;
+          label.innerText = 'Offline';
+          label.style.color = '#dc3545';
+          document.getElementById('onlineStatusMsg').innerText = 'You are Offline!';
+        }
+      }
+      // Tasks
+      let html = '';
+      let count = 0;
+      if (tasksData && currentUserUID) {
+        tasksData.forEach(data => {
+          if (data.assignedTo === currentUserUID) {
+            count++;
+            let statusBadge = '';
+            let actionBtn = '';
+            if (data.status === 'Pending') {
+              statusBadge = `<span class='badge bg-warning'>Pending</span>`;
+              actionBtn = `<button class='btn btn-sm btn-primary ms-2' onclick="startTask('${data.id}')">Start</button>`;
+            } else if (data.status === 'In Progress') {
+              statusBadge = `<span class='badge bg-info'>In Progress</span>`;
+              actionBtn = `<button class='btn btn-sm btn-success ms-2' onclick="endTask('${data.id}')">End</button>`;
+            } else if (data.status === 'Completed') {
+              statusBadge = `<span class='badge bg-success'>Completed</span>`;
+            }
+            html += `<div class='border rounded p-3 mb-3 text-start'><b>${data.title}</b><br>${data.description}<br>${statusBadge} ${actionBtn}</div>`;
+          }
+        });
+      }
+      if (count === 0) html = '<div class="text-muted">No tasks assigned yet.</div>';
+      document.getElementById('employeeTasksList').innerHTML = html;
+    }
+    async function getEmployeeIdAndLocation(userRef, userSnap) {
+      let updates = {};
+      // 1. Employee ID (permanent, never changes)
+      if (!userSnap.exists() || !userSnap.data().employeeId) {
+        // Generate new employeeId (EMP + 6-digit number based on timestamp)
+        const uniqueNum = Date.now().toString().slice(-6);
+        updates.employeeId = `EMP${uniqueNum}`;
+      }
+      // 2. Location (city/country)
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        if (res.ok) {
+          const loc = await res.json();
+          updates.location = { city: loc.city, country: loc.country_name };
+        }
+      } catch {}
+      if (Object.keys(updates).length > 0) {
+        await setDoc(userRef, updates, { merge: true });
+      }
+      return updates;
+    }
+    // On Auth
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = 'employee-login.html';
+        return;
+      }
+      currentUserUID = user.uid;
+      const userRef = doc(db, 'users', currentUserUID);
+      // 1. Fetch user status first
+      const userSnap = await getDoc(userRef);
+      let freshUser = null;
+      let shouldWriteOnline = false;
+      const nowISO = new Date().toISOString();
+      const nowDate = new Date().toLocaleDateString();
+      if (userSnap.exists()) {
+        freshUser = userSnap.data();
+        // Only write if user was offline
+        if (!freshUser.online) {
+          shouldWriteOnline = true;
+        }
+      } else {
+        // New user, treat as offline
+        shouldWriteOnline = true;
+      }
+      // 2. Generate employeeId/location if needed
+      await getEmployeeIdAndLocation(userRef, userSnap);
+      if (shouldWriteOnline) {
+        await setDoc(userRef, {
+          online: true,
+          onlineStart: nowISO,
+          onlineDate: nowDate
+        }, { merge: true });
+        freshUser = { ...(freshUser || {}), online: true, onlineStart: nowISO, onlineDate: nowDate };
+      }
+      // 2. Try to load from cache first
+      const { userData: cachedUser, tasksData: cachedTasks } = loadCache();
+      if (cachedUser && cachedTasks.length) {
+        renderUI(freshUser || cachedUser, cachedTasks);
+      }
+      // 3. Fetch fresh tasks from Firestore in background
+      const q = collection(db, 'tasks');
+      const snapshot = await getDocs(q);
+      const freshTasks = [];
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        freshTasks.push({ ...data, id: docSnap.id });
+      });
+      // Save to cache and update UI
+      saveCache(freshUser, freshTasks);
+      renderUI(freshUser, freshTasks);
+    });
+    // Task status update functions (no reload, update cache)
+    window.startTask = async function(taskId) {
+      const taskRef = doc(db, 'tasks', taskId);
+      await updateDoc(taskRef, { status: 'In Progress' });
+      // Update cache
+      const { userData, tasksData } = loadCache();
+      const updatedTasks = tasksData.map(t => t.id === taskId ? { ...t, status: 'In Progress' } : t);
+      saveCache(userData, updatedTasks);
+      renderUI(userData, updatedTasks);
+    };
+    window.endTask = async function(taskId) {
+      const taskRef = doc(db, 'tasks', taskId);
+      await updateDoc(taskRef, { status: 'Completed' });
+      // Update cache
+      const { userData, tasksData } = loadCache();
+      const updatedTasks = tasksData.map(t => t.id === taskId ? { ...t, status: 'Completed' } : t);
+      saveCache(userData, updatedTasks);
+      renderUI(userData, updatedTasks);
+    };
+    // Online/Offline toggle logic (animated, update cache)
+    document.getElementById('onlineToggle').addEventListener('change', async function() {
+      if (!currentUserUID) return;
+      const userRef = doc(db, 'users', currentUserUID);
+      const label = document.getElementById('onlineToggleLabel');
+      let { userData, tasksData } = loadCache();
+      if (this.checked) {
+        await setDoc(userRef, {
+          online: true,
+          onlineStart: new Date().toISOString(),
+          onlineDate: new Date().toLocaleDateString()
+        }, { merge: true });
+        userData = { ...userData, online: true, onlineStart: new Date().toISOString(), onlineDate: new Date().toLocaleDateString() };
+        label.innerText = 'Online';
+        label.style.color = '#28a745';
+        document.getElementById('onlineStatusMsg').innerText = 'You are Online!';
+      } else {
+        const userSnap = await getDoc(userRef);
+        let lastSessionDuration = '';
+        if (userSnap.exists() && userSnap.data().onlineStart) {
+          const endTime = new Date();
+          const startTime = new Date(userSnap.data().onlineStart);
+          const durationMs = endTime - startTime;
+          const durationHrs = Math.floor(durationMs / (1000 * 60 * 60));
+          const durationMin = Math.floor((durationMs / (1000 * 60)) % 60);
+          lastSessionDuration = `${durationHrs}h ${durationMin}m`;
+        }
+        await setDoc(userRef, {
+          online: false,
+          onlineEnd: new Date().toISOString(),
+          lastSessionDuration
+        }, { merge: true });
+        userData = { ...userData, online: false, onlineEnd: new Date().toISOString(), lastSessionDuration };
+        label.innerText = 'Offline';
+        label.style.color = '#dc3545';
+        document.getElementById('onlineStatusMsg').innerText = 'You are Offline!';
+      }
+      saveCache(userData, tasksData);
+      renderUI(userData, tasksData);
+    });
+    // Dark/Light Mode Logic
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.getElementById('themeCheckbox').checked = false;
+      } else {
+        document.body.classList.remove('dark-mode');
+        document.getElementById('themeCheckbox').checked = true;
+      }
+    }
+    // Detect system preference
+    function getSystemTheme() {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    // On load: set theme
+    let savedTheme = localStorage.getItem('employeeTheme');
+    if (!savedTheme) savedTheme = getSystemTheme();
+    applyTheme(savedTheme);
+    // Toggle event
+    document.getElementById('themeCheckbox').addEventListener('change', function() {
+      const theme = this.checked ? 'light' : 'dark';
+      applyTheme(theme);
+      localStorage.setItem('employeeTheme', theme);
+    });
+    // Sidebar navigation for My Stats
+    document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+        const page = this.getAttribute('data-page');
+        document.querySelectorAll('.page-section').forEach(sec => sec.style.display = 'none');
+        document.getElementById('page-' + page).style.display = '';
+        if (page === 'my-stats') loadMyStats();
+      });
+    });
+    // Load My Stats page
+    async function loadMyStats() {
+      // Get user and tasks from cache
+      const { userData, tasksData } = loadCache();
+      document.getElementById('statEmployeeId').innerText = userData?.employeeId || '-';
+      document.getElementById('statName').innerText = userData?.name || '-';
+      document.getElementById('statEmail').innerText = userData?.email || '-';
+      document.getElementById('statLocation').innerText = userData?.location ? `${userData.location.city || ''}, ${userData.location.country || ''}` : '-';
+      // Task stats
+      const total = tasksData.filter(t => t.assignedTo === currentUserUID).length;
+      const completed = tasksData.filter(t => t.assignedTo === currentUserUID && t.status === 'Completed').length;
+      const pending = total - completed;
+      document.getElementById('statTotalTasks').innerText = total;
+      document.getElementById('statCompletedTasks').innerText = completed;
+      document.getElementById('statPendingTasks').innerText = pending;
+      // Chart
+      if (window.statTasksChartObj) window.statTasksChartObj.destroy();
+      const ctx = document.getElementById('statTasksChart').getContext('2d');
+      window.statTasksChartObj = new window.Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Completed', 'Pending'],
+          datasets: [{
+            data: [completed, pending],
+            backgroundColor: ['#28a745', '#ffc107'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          cutout: '70%',
+          plugins: { legend: { display: true, position: 'bottom' } },
+          responsive: true
+        }
+      });
+    }
+    // Name edit logic in My Stats
+    document.getElementById('editNameBtn').addEventListener('click', function() {
+      const { userData } = loadCache();
+      document.getElementById('editNameInput').value = userData?.name || '';
+      document.getElementById('statName').style.display = 'none';
+      this.style.display = 'none';
+      document.getElementById('editNameForm').style.display = '';
+    });
+    document.getElementById('cancelNameBtn').addEventListener('click', function() {
+      document.getElementById('editNameForm').style.display = 'none';
+      document.getElementById('statName').style.display = '';
+      document.getElementById('editNameBtn').style.display = '';
+    });
+    document.getElementById('saveNameBtn').addEventListener('click', async function() {
+      const newName = document.getElementById('editNameInput').value.trim();
+      if (!newName) return;
+      // Update Firestore
+      const userRef = doc(db, 'users', currentUserUID);
+      await setDoc(userRef, { name: newName }, { merge: true });
+      // Update cache
+      const { userData, tasksData } = loadCache();
+      const updatedUser = { ...userData, name: newName };
+      saveCache(updatedUser, tasksData);
+      document.getElementById('statName').innerText = newName;
+      document.getElementById('editNameForm').style.display = 'none';
+      document.getElementById('statName').style.display = '';
+      document.getElementById('editNameBtn').style.display = '';
+    });
+  </script>
+</body>
+</html> 

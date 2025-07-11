@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | WebX Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="index.html">WebX Management</a>
+    </div>
+  </nav>
+  <div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card p-4 shadow" style="min-width:350px;">
+      <h2 class="mb-3 text-center">Admin Login</h2>
+      <form id="adminLoginForm">
+        <div class="mb-3">
+          <input type="email" id="adminEmail" class="form-control" placeholder="Admin Email" required />
+        </div>
+        <div class="mb-3">
+          <input type="password" id="adminPassword" class="form-control" placeholder="Password" required />
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Login</button>
+      </form>
+      <div id="adminLoginMsg" class="mt-3"></div>
+    </div>
+  </div>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
+    const firebaseConfig = {
+      apiKey: "AIzaSyC3zsARxErT3HCGRQ7ckwDIrdo6xZ2wF4E",
+      authDomain: "management-4bc63.firebaseapp.com",
+      projectId: "management-4bc63",
+      storageBucket: "management-4bc63.appspot.com",
+      messagingSenderId: "405137633578",
+      appId: "1:405137633578:web:86f0bacbc99abcee976e53",
+      measurementId: "G-MCX25WKJ0F"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const adminEmails = ["parth@gmail.com", "parth@admin.com"];
+    document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('adminEmail').value;
+      const password = document.getElementById('adminPassword').value;
+      const msgDiv = document.getElementById('adminLoginMsg');
+      msgDiv.innerHTML = '';
+      if(!adminEmails.includes(email)) {
+        msgDiv.innerHTML = '<div class="alert alert-danger">Only admin can login here.</div>';
+        return;
+      }
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        msgDiv.innerHTML = '<div class="alert alert-success">Login successful! Redirecting...</div>';
+        setTimeout(() => {
+          window.location.href = 'admin-dashboard.html';
+        }, 1500);
+      } catch (error) {
+        msgDiv.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+      }
+    });
+  </script>
+</body>
+</html> 

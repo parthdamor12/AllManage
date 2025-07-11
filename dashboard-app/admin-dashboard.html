@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | WebX Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body { background: #f4f6fa; }
+    .sidebar {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #223a5f 80%, #1e2a38 100%);
+      color: #fff;
+      padding: 0;
+    }
+    .sidebar .profile {
+      text-align: center;
+      padding: 2rem 1rem 1rem 1rem;
+    }
+    .sidebar .profile img {
+      width: 80px; height: 80px; border-radius: 50%; background: #fff; margin-bottom: 1rem;
+    }
+    .sidebar .nav-link { color: #fff; font-size: 1.1rem; }
+    .sidebar .nav-link.active, .sidebar .nav-link:hover { background: #1e2a38; color: #ffc107; }
+    .sidebar .icon { width: 22px; margin-right: 10px; }
+    .main-content { padding: 2rem; }
+    .card { border-radius: 1rem; }
+    .table thead { background: #f1f3f7; }
+    @media (max-width: 900px) {
+      .sidebar { min-height: auto; }
+      .main-content { padding: 1rem; }
+    }
+    /* Access Toggle Styles (professional, like dark/light) */
+    #accessToggleWrap { display: flex; align-items: center; height: 34px; }
+    #accessToggleWrap .toggle { margin-bottom: 0; box-shadow: 0 2px 8px #0001; width: 48px; height: 26px; }
+    #accessToggleWrap .toggle:focus { outline: 2px solid #007bff; }
+    #accessToggleWrap .disc { width: 20px; height: 20px; }
+    #accessToggleWrap .cloud { top: 7px; left: 8px; width: 12px; height: 6px; }
+    #accessToggleWrap .star { width: 1.5px; height: 1.5px; }
+    #accessToggleWrap .checkbox:checked + .toggle .disc { left: 20px; }
+    #accessToggleWrap .checkbox:checked + .toggle .disc svg #accessIcon { fill: #28a745; }
+    #accessToggleWrap .checkbox + .toggle .disc svg #accessIcon { fill: #888; }
+    /* Glow Button Styles (from user reference, adapted) */
+    .glow-button {
+      --button-background: #09041e;
+      --button-color: #fff;
+      --button-shadow: rgba(33, 4, 104, 0.2);
+      --button-shine-left: rgba(120, 0, 245, 0.5);
+      --button-shine-right: rgba(200, 148, 255, 0.65);
+      --button-glow-start: #B000E8;
+      --button-glow-end: #009FFD;
+      appearance: none;
+      outline: none;
+      border: none;
+      font-family: inherit;
+      font-size: 18px;
+      font-weight: 600;
+      border-radius: 11px;
+      position: relative;
+      line-height: 24px;
+      cursor: pointer;
+      color: var(--button-color);
+      padding: 0;
+      margin: 0;
+      background: none;
+      z-index: 1;
+      box-shadow: 0 8px 20px var(--button-shadow);
+      transition: box-shadow 0.2s;
+    }
+    .glow-button .gradient {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+      background: linear-gradient(90deg, var(--button-shine-left), var(--button-shine-right));
+      opacity: 0.7;
+      filter: blur(8px);
+      transition: opacity 0.3s;
+    }
+    .glow-button span {
+      z-index: 1;
+      position: relative;
+      display: block;
+      padding: 12px 36px;
+      box-sizing: border-box;
+      width: fit-content;
+      min-width: 160px;
+      border-radius: inherit;
+      background-color: var(--button-background);
+      overflow: hidden;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-shadow: 0 2px 8px #0002;
+    }
+    .glow-button:focus { outline: 2px solid #007bff; }
+    .glow-button:hover, .glow-button:active {
+      box-shadow: 0 0 32px 8px var(--button-glow, #B000E8);
+    }
+    .glow-button[data-on="true"] {
+      --button-background: #0a2e1a;
+      --button-glow-start: #00e87a;
+      --button-glow-end: #00cfff;
+      --button-shine-left: rgba(0, 232, 122, 0.5);
+      --button-shine-right: rgba(0, 207, 255, 0.65);
+    }
+    .glow-button[data-on="false"] {
+      --button-background: #2e0a1a;
+      --button-glow-start: #B000E8;
+      --button-glow-end: #009FFD;
+      --button-shine-left: rgba(120, 0, 245, 0.5);
+      --button-shine-right: rgba(200, 148, 255, 0.65);
+    }
+  </style>
+</head>
+<body>
+    <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <nav class="col-md-3 col-lg-2 d-md-block sidebar">
+        <div class="profile">
+          <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Profile" />
+          <h5 id="adminName">Admin</h5>
+          <p id="adminEmail" style="font-size:0.95rem;">admin@email.com</p>
+        </div>
+        <ul class="nav flex-column mb-4">
+          <li class="nav-item"><a class="nav-link active" href="#" data-page="home"><span class="icon">🏠</span>Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-page="employees"><span class="icon">📁</span>Employees</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-page="tasks"><span class="icon">✉️</span>Tasks</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-page="notification"><span class="icon">🔔</span>Notification</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-page="location"><span class="icon">📍</span>Location</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-page="graph"><span class="icon">📊</span>Graph</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-page="assign-task"><span class="icon">📝</span>Assign Task</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" data-page="employee-id"><span class="icon">🆔</span>Employee ID</a></li>
+        </ul>
+        <div class="text-center mb-3">
+          <a href="admin-login.html" class="btn btn-light btn-sm">Logout</a>
+    </div>
+  </nav>
+      <!-- Main Content -->
+      <main class="col-md-9 col-lg-10 ms-sm-auto main-content">
+        <!-- Home -->
+        <div id="page-home" class="page-section">
+          <h2>Welcome to Admin Dashboard</h2>
+          <p>This is your home page. Select a section from the sidebar.</p>
+          <div class="d-flex align-items-center mb-4">
+            <button class="glow-button" id="accessGlowButton" style="margin-right:1rem;"><span id="accessGlowButtonText">Enable Employee Access</span></button>
+          </div>
+          <div class="card p-4 shadow mb-4 w-100" style="max-width:900px;">
+            <h4 class="mb-3">Online Employees & Their Task Counts</h4>
+            <div class="table-responsive mb-4">
+              <table class="table table-bordered table-striped">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Task Count</th>
+                  </tr>
+                </thead>
+                <tbody id="onlineEmployeesTableBody">
+                  <tr><td colspan="4">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <canvas id="onlineEmployeesChart" height="120"></canvas>
+          </div>
+    </div>
+        <!-- Employees (Employee List) -->
+        <div id="page-employees" class="page-section" style="display:none;">
+          <div class="card p-4 shadow mb-4 w-100" style="max-width:900px;">
+      <h3 class="mb-3">All Employees <span class="badge bg-primary" id="totalEmployees">0</span></h3>
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Employee ID</th>
+              <th>Name</th>
+              <th>Email</th>
+                    <th>Task Count</th>
+                    <th>Status</th>
+                    <th>Time Worked Today</th>
+                    <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="employeeTableBody">
+                  <tr><td colspan="5">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- Tasks (Assigned Tasks) -->
+        <div id="page-tasks" class="page-section" style="display:none;">
+          <div class="card p-4 shadow mb-4 w-100" style="max-width:900px;">
+            <h3 class="mb-3">Assigned Tasks</h3>
+            <div class="table-responsive">
+              <table class="table table-bordered table-striped">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Employee</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody id="taskTableBody">
+                  <tr><td colspan="6">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+          </div>
+        </div>
+        <!-- Notification, Location, Graph: Blank/Placeholder -->
+        <div id="page-notification" class="page-section" style="display:none;"><h3>Notification</h3><p>Coming soon...</p></div>
+        <div id="page-location" class="page-section" style="display:none;"><h3>Location</h3><p>Coming soon...</p></div>
+        <div id="page-graph" class="page-section" style="display:none;"><h3>Graph</h3><p>Coming soon...</p></div>
+        <!-- Assign Task Tab -->
+        <div id="page-assign-task" class="page-section" style="display:none;">
+          <div class="card p-4 shadow mb-4 w-100" style="max-width:1100px;">
+            <h3 class="mb-3">Assign Task to Employees</h3>
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover align-middle text-center bg-white">
+                <thead class="table-light">
+                  <tr style="vertical-align:middle;">
+                    <th>#</th>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Task Count</th>
+                    <th>Completed</th>
+                    <th>Pending</th>
+                    <th style="min-width:140px;">Progress</th>
+                    <th style="min-width:220px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="assignTaskTableBody">
+                  <tr><td colspan="8">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="mt-4 p-3 bg-light rounded shadow-sm">
+              <h5 class="mb-3">Employee Task Completion %</h5>
+              <canvas id="assignTaskProgressChart" height="120"></canvas>
+            </div>
+          </div>
+        </div>
+        <!-- Modal for Assign/View Task -->
+        <div class="modal fade" id="assignTaskModal" tabindex="-1" aria-labelledby="assignTaskModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="assignTaskModalLabel">Employee Tasks</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <div id="employeeTasksList" class="mb-4"></div>
+                <form id="assignTaskForm">
+                  <input type="hidden" id="assignToUID" />
+                  <div class="mb-3">
+                    <label for="taskTitle" class="form-label">Task Title</label>
+                    <input type="text" id="taskTitle" class="form-control" required />
+                  </div>
+                  <div class="mb-3">
+                    <label for="taskDesc" class="form-label">Task Description</label>
+                    <textarea id="taskDesc" class="form-control" required></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Assign Task</button>
+                </form>
+                <div id="assignTaskMsg" class="mt-2"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Employee ID Tab -->
+        <div id="page-employee-id" class="page-section" style="display:none;">
+          <div class="card p-4 shadow mb-4 w-100" style="max-width:900px;">
+            <h3 class="mb-3">All Employee IDs</h3>
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover align-middle text-center bg-white">
+                <thead class="table-light">
+                  <tr style="vertical-align:middle;">
+                    <th>#</th>
+                    <th>Employee ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Location</th>
+                  </tr>
+                </thead>
+                <tbody id="employeeIdTableBody">
+                  <tr><td colspan="5">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+    import { getFirestore, collection, getDocs, doc, addDoc, getDoc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+    const firebaseConfig = {
+      apiKey: "AIzaSyC3zsARxErT3HCGRQ7ckwDIrdo6xZ2wF4E",
+      authDomain: "management-4bc63.firebaseapp.com",
+      projectId: "management-4bc63",
+      storageBucket: "management-4bc63.appspot.com",
+      messagingSenderId: "405137633578",
+      appId: "1:405137633578:web:86f0bacbc99abcee976e53",
+      measurementId: "G-MCX25WKJ0F"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    // Sidebar navigation
+    document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+        const page = this.getAttribute('data-page');
+        document.querySelectorAll('.page-section').forEach(sec => sec.style.display = 'none');
+        document.getElementById('page-' + page).style.display = '';
+      });
+    });
+    // Load employees for Employees tab (with task count and view)
+    async function loadEmployees() {
+      const usersQ = collection(db, 'users');
+      const tasksQ = collection(db, 'tasks');
+      const [usersSnap, tasksSnap] = await Promise.all([
+        getDocs(usersQ),
+        getDocs(tasksQ)
+      ]);
+      const allTasks = [];
+      tasksSnap.forEach(doc => allTasks.push({ id: doc.id, ...doc.data() }));
+      const tbody = document.getElementById('employeeTableBody');
+      tbody.innerHTML = '';
+      let count = 0;
+      usersSnap.forEach((doc, idx) => {
+        const data = doc.data();
+        if (data.role === 'employee') {
+          count++;
+          const empTasks = allTasks.filter(t => t.assignedTo === doc.id);
+          // Calculate Time Worked Today
+          let timeWorked = '-';
+          if (data.online && data.onlineStart) {
+            // If online, show live duration
+            const start = new Date(data.onlineStart);
+            const now = new Date();
+            const diffMs = now - start;
+            const hrs = Math.floor(diffMs / (1000 * 60 * 60));
+            const min = Math.floor((diffMs / (1000 * 60)) % 60);
+            timeWorked = `${hrs}h ${min}m`;
+          } else if (data.lastSessionDuration) {
+            // If offline, show last session duration
+            timeWorked = data.lastSessionDuration;
+          }
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${count}</td>
+            <td><span class='badge bg-dark'>${data.employeeId || '-'}</span></td>
+            <td>${data.name || ''}</td>
+            <td>${data.email || ''}</td>
+            <td><span class='badge bg-info'>${empTasks.length}</span></td>
+            <td>${data.online ? '<span class="badge bg-success">Online</span>' : '<span class="badge bg-secondary">Offline</span>'}</td>
+            <td>${timeWorked}</td>
+            <td><button class='btn btn-sm btn-secondary' data-uid='${doc.id}' data-name='${data.name || ''}' data-email='${data.email || ''}' data-action='view'>View Tasks</button></td>
+          </tr>
+          <tr id='tasks-row-${doc.id}' style='display:none;'><td colspan='7'><div id='tasks-list-${doc.id}'></div></td></tr>
+          `;
+          tbody.appendChild(tr);
+        }
+      });
+      if (count === 0) {
+        tbody.innerHTML = '<tr><td colspan="5">No employees found.</td></tr>';
+      }
+      // Add view tasks button listeners
+      tbody.querySelectorAll('button[data-uid][data-action="view"]').forEach(btn => {
+        btn.addEventListener('click', async function() {
+          const uid = this.getAttribute('data-uid');
+          const row = document.getElementById(`tasks-row-${uid}`);
+          if (row.style.display === 'none') {
+            // Show tasks
+            const tasksDiv = document.getElementById(`tasks-list-${uid}`);
+            tasksDiv.innerHTML = '<span class="text-muted">Loading...</span>';
+            const q = collection(db, 'tasks');
+            const snapshot = await getDocs(q);
+            let html = '';
+            let count = 0;
+            snapshot.forEach(docSnap => {
+              const data = docSnap.data();
+              if (data.assignedTo === uid) {
+                count++;
+                html += `<div class='border rounded p-2 mb-2'><b>${data.title}</b><br>${data.description}<br><span class='badge bg-${data.status === 'Completed' ? 'success' : data.status === 'In Progress' ? 'info' : 'warning'}'>${data.status}</span></div>`;
+              }
+            });
+            if (count === 0) html = '<div class="text-muted">No tasks assigned yet.</div>';
+            tasksDiv.innerHTML = html;
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
+      document.getElementById('totalEmployees').innerText = count;
+    }
+    // Load assigned tasks
+    async function loadTasks() {
+      const q = collection(db, 'tasks');
+      const usersQ = collection(db, 'users');
+      const usersSnap = await getDocs(usersQ);
+      const userMap = {};
+      usersSnap.forEach(u => userMap[u.id] = u.data());
+      const snapshot = await getDocs(q);
+      const tbody = document.getElementById('taskTableBody');
+      tbody.innerHTML = '';
+      let count = 0;
+      snapshot.forEach((doc, idx) => {
+        const data = doc.data();
+        if (data.assignedTo && userMap[data.assignedTo]) {
+          count++;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>${count}</td><td>${userMap[data.assignedTo].name || ''} (${userMap[data.assignedTo].email || ''})</td><td>${data.title || ''}</td><td>${data.description || ''}</td><td>${data.status || ''}</td><td>${data.createdAt ? new Date(data.createdAt).toLocaleString() : ''}</td>`;
+          tbody.appendChild(tr);
+        }
+      });
+      if (count === 0) {
+        tbody.innerHTML = '<tr><td colspan="6">No tasks found.</td></tr>';
+      }
+    }
+    // Load employees for Assign Task (with task count, view, and inline assign)
+    async function loadAssignTaskEmployees() {
+      const usersQ = collection(db, 'users');
+      const tasksQ = collection(db, 'tasks');
+      const [usersSnap, tasksSnap] = await Promise.all([
+        getDocs(usersQ),
+        getDocs(tasksQ)
+      ]);
+      const allTasks = [];
+      tasksSnap.forEach(doc => allTasks.push({ id: doc.id, ...doc.data() }));
+      const tbody = document.getElementById('assignTaskTableBody');
+      tbody.innerHTML = '';
+      let count = 0;
+      // For chart
+      const chartLabels = [];
+      const chartData = [];
+      usersSnap.forEach((doc, idx) => {
+        const data = doc.data();
+        if (data.role === 'employee') {
+          count++;
+          const empTasks = allTasks.filter(t => t.assignedTo === doc.id);
+          const completed = empTasks.filter(t => t.status === 'Completed').length;
+          const pending = empTasks.filter(t => t.status !== 'Completed').length;
+          const total = empTasks.length;
+          const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+          // For chart
+          chartLabels.push(data.name || data.email || 'Employee');
+          chartData.push(percent);
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${count}</td>
+            <td><span class='badge bg-dark'>${data.employeeId || '-'}</span></td>
+            <td class='fw-semibold text-capitalize'>${data.name || ''}</td>
+            <td class='text-muted small'>${data.email || ''}</td>
+            <td><span class='badge bg-info fs-6'>${empTasks.length}</span></td>
+            <td><span class='badge bg-success fs-6'>${completed}</span></td>
+            <td><span class='badge bg-warning text-dark fs-6'>${pending}</span></td>
+            <td style='min-width:140px;'>
+              <div class='progress' style='height:22px;background:#e9ecef;'>
+                <div class='progress-bar progress-bar-striped progress-bar-animated fw-bold' role='progressbar' style='width:${percent}%;font-size:1rem;' aria-valuenow='${percent}' aria-valuemin='0' aria-valuemax='100'>${percent}%</div>
+              </div>
+            </td>
+            <td style='min-width:220px;'>
+              <div class='d-flex flex-wrap gap-1 justify-content-center'>
+                <input type='text' class='form-control form-control-sm mb-1' placeholder='Title' id='title-${doc.id}' style='max-width:110px;display:inline-block;' />
+                <input type='text' class='form-control form-control-sm mb-1' placeholder='Description' id='desc-${doc.id}' style='max-width:140px;display:inline-block;' />
+                <button class='btn btn-sm btn-primary' id='assign-${doc.id}'>Assign</button>
+                <button class='btn btn-sm btn-secondary ms-2' data-uid='${doc.id}' data-name='${data.name || ''}' data-email='${data.email || ''}' data-action='view'>View Tasks</button>
+              </div>
+              <div id='msg-${doc.id}' style='font-size:0.9em;'></div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
+      });
+      if (count === 0) {
+        tbody.innerHTML = '<tr><td colspan="8">No employees found.</td></tr>';
+      }
+      // Render chart
+      if (window.assignTaskProgressChart) window.assignTaskProgressChart.destroy();
+      const ctx = document.getElementById('assignTaskProgressChart').getContext('2d');
+      window.assignTaskProgressChart = new window.Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: chartLabels,
+          datasets: [{
+            label: '% Complete',
+            data: chartData,
+            backgroundColor: 'rgba(54, 162, 235, 0.7)'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, max: 100, ticks: { stepSize: 10 } } }
+        }
+      });
+      // Responsive chart container
+      const chartContainer = document.getElementById('assignTaskProgressChart').parentElement;
+      chartContainer.style.overflowX = 'auto';
+      chartContainer.style.maxWidth = '100%';
+      chartContainer.style.minWidth = '320px';
+      // Add assign button listeners
+      usersSnap.forEach((doc) => {
+        const btn = document.getElementById(`assign-${doc.id}`);
+        if (btn) {
+          btn.addEventListener('click', async function() {
+            const title = document.getElementById(`title-${doc.id}`).value.trim();
+            const desc = document.getElementById(`desc-${doc.id}`).value.trim();
+            const msgDiv = document.getElementById(`msg-${doc.id}`);
+            msgDiv.innerHTML = '';
+            if (!title || !desc) {
+              msgDiv.innerHTML = '<span class="text-danger">Enter title and description</span>';
+              return;
+            }
+            try {
+              await addDoc(collection(db, 'tasks'), {
+                title,
+                description: desc,
+                assignedTo: doc.id,
+                status: 'Pending',
+                createdAt: new Date().toISOString()
+              });
+              msgDiv.innerHTML = '<span class="text-success">Task assigned!</span>';
+              document.getElementById(`title-${doc.id}`).value = '';
+              document.getElementById(`desc-${doc.id}`).value = '';
+              // Refresh task count
+              await loadAssignTaskEmployees();
+            } catch (error) {
+              msgDiv.innerHTML = `<span class='text-danger'>${error.message}</span>`;
+            }
+          });
+        }
+      });
+      // Add view tasks button listeners
+      tbody.querySelectorAll('button[data-uid][data-action="view"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const uid = this.getAttribute('data-uid');
+          const name = this.getAttribute('data-name');
+          const email = this.getAttribute('data-email');
+          document.getElementById('assignToUID').value = uid;
+          document.getElementById('taskTitle').value = '';
+          document.getElementById('taskDesc').value = '';
+          document.getElementById('assignTaskMsg').innerHTML = '';
+          showEmployeeTasks(uid, name, email);
+          const modal = new bootstrap.Modal(document.getElementById('assignTaskModal'));
+          modal.show();
+        });
+      });
+    }
+    // Show employee's tasks in modal
+    async function showEmployeeTasks(uid, name, email) {
+      document.getElementById('assignTaskModalLabel').innerText = `Tasks for ${name} (${email})`;
+      const q = collection(db, 'tasks');
+      const snapshot = await getDocs(q);
+      let html = '';
+      let count = 0;
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.assignedTo === uid) {
+          count++;
+          html += `<div class='border rounded p-2 mb-2'><b>${data.title}</b><br>${data.description}<br><span class='badge bg-${data.status === 'Completed' ? 'success' : 'warning'}'>${data.status}</span></div>`;
+        }
+      });
+      if (count === 0) html = '<div class="text-muted">No tasks assigned yet.</div>';
+      document.getElementById('employeeTasksList').innerHTML = html;
+    }
+    // Assign Task Form Submit
+    document.getElementById('assignTaskForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const uid = document.getElementById('assignToUID').value;
+      const title = document.getElementById('taskTitle').value;
+      const description = document.getElementById('taskDesc').value;
+      const msgDiv = document.getElementById('assignTaskMsg');
+      msgDiv.innerHTML = '';
+      try {
+        await addDoc(collection(db, 'tasks'), {
+          title,
+          description,
+          assignedTo: uid,
+          status: 'Pending',
+          createdAt: new Date().toISOString()
+        });
+        msgDiv.innerHTML = '<div class="alert alert-success">Task assigned successfully!</div>';
+        // Refresh the employee's task list in the modal
+        const name = document.getElementById('assignTaskModalLabel').innerText.split('(')[0].replace('Tasks for','').trim();
+        const email = document.getElementById('assignTaskModalLabel').innerText.split('(')[1]?.replace(')','').trim() || '';
+        await showEmployeeTasks(uid, name, email);
+        // Refresh the table task count
+        await loadAssignTaskEmployees();
+      } catch (error) {
+        msgDiv.innerHTML = `<div class='alert alert-danger'>${error.message}</div>`;
+      }
+    });
+    // Load online employees and their task counts for Home page
+    async function loadOnlineEmployeesHome() {
+      const usersQ = collection(db, 'users');
+      const tasksQ = collection(db, 'tasks');
+      const [usersSnap, tasksSnap] = await Promise.all([
+        getDocs(usersQ),
+        getDocs(tasksQ)
+      ]);
+      const allTasks = [];
+      tasksSnap.forEach(doc => allTasks.push({ id: doc.id, ...doc.data() }));
+      const tbody = document.getElementById('onlineEmployeesTableBody');
+      tbody.innerHTML = '';
+      let count = 0;
+      const chartLabels = [];
+      const chartData = [];
+      usersSnap.forEach((doc, idx) => {
+        const data = doc.data();
+        if (data.role === 'employee' && data.online) {
+          count++;
+          const empTasks = allTasks.filter(t => t.assignedTo === doc.id);
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${count}</td>
+            <td>${data.name || ''}</td>
+            <td>${data.email || ''}</td>
+            <td><span class='badge bg-info'>${empTasks.length}</span></td>
+          `;
+          tbody.appendChild(tr);
+          chartLabels.push(data.name || data.email || 'Employee');
+          chartData.push(empTasks.length);
+        }
+      });
+      if (count === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">No employees online.</td></tr>';
+      }
+      // Render chart
+      if (window.onlineEmpChart) window.onlineEmpChart.destroy();
+      const ctx = document.getElementById('onlineEmployeesChart').getContext('2d');
+      window.onlineEmpChart = new window.Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: chartLabels,
+          datasets: [{
+            label: 'Task Count',
+            data: chartData,
+            backgroundColor: 'rgba(54, 162, 235, 0.7)'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, precision:0 } }
+        }
+      });
+    }
+    // Load Employee ID tab
+    async function loadEmployeeIdTab() {
+      const usersQ = collection(db, 'users');
+      const usersSnap = await getDocs(usersQ);
+      const tbody = document.getElementById('employeeIdTableBody');
+      tbody.innerHTML = '';
+      let count = 0;
+      usersSnap.forEach((doc, idx) => {
+        const data = doc.data();
+        if (data.role === 'employee') {
+          count++;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${count}</td>
+            <td><span class='badge bg-dark'>${data.employeeId || '-'}</span></td>
+            <td class='fw-semibold text-capitalize'>${data.name || ''}</td>
+            <td class='text-muted small'>${data.email || ''}</td>
+            <td>${data.location ? `${data.location.city || ''}, ${data.location.country || ''}` : '-'}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+      });
+      if (count === 0) {
+        tbody.innerHTML = '<tr><td colspan="5">No employees found.</td></tr>';
+      }
+    }
+    // Set admin profile (static for now)
+    document.getElementById('adminName').innerText = 'Admin';
+    document.getElementById('adminEmail').innerText = 'admin@email.com';
+    // Initial load
+    loadEmployees();
+    loadTasks();
+    loadAssignTaskEmployees();
+    // Load Chart.js for Home page chart
+    if (!window.Chart) {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+      script.onload = () => loadOnlineEmployeesHome();
+      document.head.appendChild(script);
+    } else {
+      loadOnlineEmployeesHome();
+    }
+    // Reload data when switching tabs
+    document.querySelector('[data-page="employees"]').addEventListener('click', loadEmployees);
+    document.querySelector('[data-page="tasks"]').addEventListener('click', loadTasks);
+    document.querySelector('[data-page="assign-task"]').addEventListener('click', loadAssignTaskEmployees);
+    // Reload Home data when switching tabs
+    document.querySelector('[data-page="home"]').addEventListener('click', loadOnlineEmployeesHome);
+    // Sidebar tab click for Employee ID
+    document.querySelector('[data-page="employee-id"]').addEventListener('click', loadEmployeeIdTab);
+    // Reload Employee ID data when switching tabs
+    document.querySelector('[data-page="employee-id"]').addEventListener('click', loadEmployeeIdTab);
+    // Extra responsive tweaks
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @media (max-width: 900px) {
+        #page-assign-task .table-responsive { font-size: 0.95rem; }
+        #page-assign-task .progress-bar { font-size: 0.9rem; }
+        #page-assign-task .form-control-sm { font-size: 0.95rem; }
+      }
+      @media (max-width: 600px) {
+        #page-assign-task .table-responsive { font-size: 0.9rem; }
+        #page-assign-task .progress { height: 18px !important; }
+        #page-assign-task .progress-bar { font-size: 0.8rem; }
+        #page-assign-task .form-control-sm { font-size: 0.9rem; }
+      }
+    `;
+    document.head.appendChild(style);
+    // Glow Button Logic
+    async function loadAccessGlowButton() {
+      const accessRef = doc(db, 'settings', 'employeeAccess');
+      const snap = await getDoc(accessRef);
+      let enabled = false;
+      if (snap.exists()) enabled = !!snap.data().enabled;
+      const btn = document.getElementById('accessGlowButton');
+      const btnText = document.getElementById('accessGlowButtonText');
+      btn.setAttribute('data-on', enabled ? 'true' : 'false');
+      btnText.innerText = enabled ? 'Disable Employee Access' : 'Enable Employee Access';
+      // Remove old gradient if any
+      let grad = btn.querySelector('.gradient');
+      if (grad) grad.remove();
+      grad = document.createElement('div');
+      grad.className = 'gradient';
+      btn.appendChild(grad);
+    }
+    document.getElementById('accessGlowButton').addEventListener('click', async function(e) {
+      e.preventDefault();
+      const btn = this;
+      const btnText = document.getElementById('accessGlowButtonText');
+      const enabled = btn.getAttribute('data-on') === 'true';
+      if (enabled) {
+        // Only show confirmation when turning OFF
+        const msg1 = 'Are you sure you want to DISABLE employee access? Employees will be blocked from the dashboard.';
+        if (!window.confirm(msg1)) return;
+        const msg2 = 'Please confirm again: DISABLE employee access?';
+        if (!window.confirm(msg2)) return;
+      }
+      // Update Firestore
+      const accessRef = doc(db, 'settings', 'employeeAccess');
+      await setDoc(accessRef, { enabled: !enabled }, { merge: true });
+      btn.setAttribute('data-on', !enabled ? 'true' : 'false');
+      btnText.innerText = !enabled ? 'Disable Employee Access' : 'Enable Employee Access';
+      // Remove old gradient if any
+      let grad = btn.querySelector('.gradient');
+      if (grad) grad.remove();
+      grad = document.createElement('div');
+      grad.className = 'gradient';
+      btn.appendChild(grad);
+    });
+    // Home tab show
+    document.querySelector('[data-page="home"]').addEventListener('click', loadAccessGlowButton);
+    // Initial load
+    loadAccessGlowButton();
+  </script>
+</body>
+</html> 

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assign Task | WebX Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="admin-dashboard.html">WebX Management</a>
+      <a class="btn btn-light" href="admin-login.html">Logout</a>
+    </div>
+  </nav>
+  <div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card p-4 shadow" style="min-width:350px;max-width:500px;width:100%;">
+      <h2 class="mb-3 text-center">Assign Task to Employee</h2>
+      <form id="taskForm">
+        <div class="mb-3">
+          <label for="employeeSelect" class="form-label">Select Employee</label>
+          <select id="employeeSelect" class="form-select" required>
+            <option value="">Loading employees...</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="taskTitle" class="form-label">Task Title</label>
+          <input type="text" id="taskTitle" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label for="taskDesc" class="form-label">Task Description</label>
+          <textarea id="taskDesc" class="form-control" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Assign Task</button>
+      </form>
+      <div id="taskMsg" class="mt-3"></div>
+    </div>
+  </div>
+  <div class="container mt-4">
+    <h3 class="mb-3">Assign Task to Employees</h3>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="employeeTaskTableBody">
+          <tr><td colspan="4">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+    import { getFirestore, collection, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+    const firebaseConfig = {
+      apiKey: "AIzaSyC3zsARxErT3HCGRQ7ckwDIrdo6xZ2wF4E",
+      authDomain: "management-4bc63.firebaseapp.com",
+      projectId: "management-4bc63",
+      storageBucket: "management-4bc63.appspot.com",
+      messagingSenderId: "405137633578",
+      appId: "1:405137633578:web:86f0bacbc99abcee976e53",
+      measurementId: "G-MCX25WKJ0F"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    // Load employees
+    async function loadEmployees() {
+      const q = collection(db, 'users');
+      const snapshot = await getDocs(q);
+      const select = document.getElementById('employeeSelect');
+      select.innerHTML = '';
+      let found = false;
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.role === 'employee') {
+          found = true;
+          const option = document.createElement('option');
+          option.value = doc.id;
+          option.text = `${data.name} (${data.email})`;
+          select.appendChild(option);
+        }
+      });
+      if (!found) {
+        select.innerHTML = '<option value="">No employees found</option>';
+      }
+    }
+    loadEmployees();
+    // Assign task
+    document.getElementById('taskForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const employeeUID = document.getElementById('employeeSelect').value;
+      const title = document.getElementById('taskTitle').value;
+      const description = document.getElementById('taskDesc').value;
+      const msgDiv = document.getElementById('taskMsg');
+      msgDiv.innerHTML = '';
+      if (!employeeUID) {
+        msgDiv.innerHTML = '<div class="alert alert-danger">Please select an employee.</div>';
+        return;
+      }
+      try {
+        await addDoc(collection(db, 'tasks'), {
+          title,
+          description,
+          assignedTo: employeeUID,
+          status: 'Pending',
+          createdAt: new Date().toISOString()
+        });
+        msgDiv.innerHTML = '<div class="alert alert-success">Task assigned successfully!</div>';
+        document.getElementById('taskForm').reset();
+        loadEmployees();
+      } catch (error) {
+        msgDiv.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+      }
+    });
+
+    // Load employees with inline assign task
+    async function loadEmployeeTaskTable() {
+      const q = collection(db, 'users');
+      const tasksQ = collection(db, 'tasks');
+      const [snapshot, tasksSnap] = await Promise.all([
+        getDocs(q),
+        getDocs(tasksQ)
+      ]);
+      const allTasks = [];
+      tasksSnap.forEach(doc => allTasks.push({ id: doc.id, ...doc.data() }));
+      const tbody = document.getElementById('employeeTaskTableBody');
+      tbody.innerHTML = '';
+      let count = 0;
+      snapshot.forEach((doc, idx) => {
+        const data = doc.data();
+        if (data.role === 'employee') {
+          count++;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${count}</td>
+            <td>${data.name || ''}</td>
+            <td>${data.email || ''}</td>
+            <td>
+              <input type='text' class='form-control form-control-sm mb-1' placeholder='Title' id='title-${doc.id}' style='max-width:110px;display:inline-block;' />
+              <input type='text' class='form-control form-control-sm mb-1' placeholder='Description' id='desc-${doc.id}' style='max-width:140px;display:inline-block;' />
+              <button class='btn btn-sm btn-primary' id='assign-${doc.id}'>Assign</button>
+              <button class='btn btn-sm btn-secondary ms-2' id='view-${doc.id}'>View Tasks</button>
+              <div id='msg-${doc.id}' style='font-size:0.9em;'></div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+          // Add expandable row for tasks
+          const taskRow = document.createElement('tr');
+          taskRow.id = `tasks-row-${doc.id}`;
+          taskRow.style.display = 'none';
+          taskRow.innerHTML = `<td colspan='4' style='padding-left:2rem;background:#f8f9fa;'><div id='tasks-list-${doc.id}'></div></td>`;
+          tbody.appendChild(taskRow);
+        }
+      });
+      if (count === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">No employees found.</td></tr>';
+      }
+      // Add assign button listeners
+      snapshot.forEach((doc) => {
+        const btn = document.getElementById(`assign-${doc.id}`);
+        if (btn) {
+          btn.addEventListener('click', async function() {
+            const title = document.getElementById(`title-${doc.id}`).value.trim();
+            const desc = document.getElementById(`desc-${doc.id}`).value.trim();
+            const msgDiv = document.getElementById(`msg-${doc.id}`);
+            msgDiv.innerHTML = '';
+            if (!title || !desc) {
+              msgDiv.innerHTML = '<span class="text-danger">Enter title and description</span>';
+              return;
+            }
+            try {
+              await addDoc(collection(db, 'tasks'), {
+                title,
+                description: desc,
+                assignedTo: doc.id,
+                status: 'Pending',
+                createdAt: new Date().toISOString()
+              });
+              msgDiv.innerHTML = '<span class="text-success">Task assigned!</span>';
+              document.getElementById(`title-${doc.id}`).value = '';
+              document.getElementById(`desc-${doc.id}`).value = '';
+            } catch (error) {
+              msgDiv.innerHTML = `<span class='text-danger'>${error.message}</span>`;
+            }
+          });
+        }
+        // Add view tasks button listener
+        const viewBtn = document.getElementById(`view-${doc.id}`);
+        if (viewBtn) {
+          viewBtn.addEventListener('click', async function() {
+            const row = document.getElementById(`tasks-row-${doc.id}`);
+            if (row.style.display === 'none') {
+              // Show tasks
+              const tasksDiv = document.getElementById(`tasks-list-${doc.id}`);
+              tasksDiv.innerHTML = '<span class="text-muted">Loading...</span>';
+              let html = '';
+              let tcount = 0;
+              allTasks.forEach(task => {
+                if (task.assignedTo === doc.id) {
+                  tcount++;
+                  html += `<div class='border rounded p-2 mb-2'><b>${task.title}</b><br>${task.description}<br><span class='badge bg-${task.status === 'Completed' ? 'success' : task.status === 'In Progress' ? 'info' : 'warning'}'>${task.status}</span></div>`;
+                }
+              });
+              if (tcount === 0) html = '<div class="text-muted">No tasks assigned yet.</div>';
+              tasksDiv.innerHTML = html;
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          });
+        }
+      });
+    }
+    loadEmployeeTaskTable();
+  </script>
+</body>
+</html> 

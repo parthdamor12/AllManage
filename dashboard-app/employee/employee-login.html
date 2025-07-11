@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Login/Register | WebX Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="index.html">WebX Management</a>
+    </div>
+  </nav>
+  <div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card p-4 shadow" style="min-width:350px;">
+      <h2 class="mb-3 text-center" id="formTitle">Employee Login</h2>
+      <!-- Login Form -->
+      <form id="employeeLoginForm">
+        <div class="mb-3">
+          <input type="email" id="loginEmail" class="form-control" placeholder="Email" required />
+        </div>
+        <div class="mb-3">
+          <input type="password" id="loginPassword" class="form-control" placeholder="Password" required />
+        </div>
+        <div class="mb-3 form-check text-start">
+          <input type="checkbox" class="form-check-input" id="rememberMeCheck">
+          <label class="form-check-label" for="rememberMeCheck">Remember Me</label>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Login</button>
+      </form>
+      <!-- Register Form (hidden by default) -->
+      <form id="employeeRegisterForm" style="display:none;">
+        <div class="mb-3">
+          <input type="text" id="empName" class="form-control" placeholder="Name" required />
+        </div>
+        <div class="mb-3">
+          <input type="email" id="empEmail" class="form-control" placeholder="Email" required />
+        </div>
+        <div class="mb-3">
+          <input type="password" id="empPassword" class="form-control" placeholder="Password" required />
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Register</button>
+      </form>
+      <div class="mt-3 text-center">
+        <a href="#" id="toggleForm">Don't have an account? Register</a>
+      </div>
+      <div id="empMsg" class="mt-3"></div>
+    </div>
+  </div>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
+    import { getFirestore, setDoc, doc, getDoc } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+    const firebaseConfig = {
+      apiKey: "AIzaSyC3zsARxErT3HCGRQ7ckwDIrdo6xZ2wF4E",
+      authDomain: "management-4bc63.firebaseapp.com",
+      projectId: "management-4bc63",
+      storageBucket: "management-4bc63.appspot.com",
+      messagingSenderId: "405137633578",
+      appId: "1:405137633578:web:86f0bacbc99abcee976e53",
+      measurementId: "G-MCX25WKJ0F"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    // Toggle between login and register
+    const loginForm = document.getElementById('employeeLoginForm');
+    const registerForm = document.getElementById('employeeRegisterForm');
+    const toggleForm = document.getElementById('toggleForm');
+    const formTitle = document.getElementById('formTitle');
+    const msgDiv = document.getElementById('empMsg');
+    let isLogin = true;
+    toggleForm.addEventListener('click', function(e) {
+      e.preventDefault();
+      isLogin = !isLogin;
+      if(isLogin) {
+        loginForm.style.display = '';
+        registerForm.style.display = 'none';
+        formTitle.innerText = 'Employee Login';
+        toggleForm.innerText = "Don't have an account? Register";
+      } else {
+        loginForm.style.display = 'none';
+        registerForm.style.display = '';
+        formTitle.innerText = 'Employee Register';
+        toggleForm.innerText = "Already have an account? Login";
+      }
+      msgDiv.innerHTML = '';
+    });
+    // Login
+    // Auto-fill email if saved
+    const rememberMeCheck = document.getElementById('rememberMeCheck');
+    const savedEmail = localStorage.getItem('rememberedEmployeeEmail');
+    if (savedEmail) {
+      document.getElementById('loginEmail').value = savedEmail;
+      rememberMeCheck.checked = true;
+    }
+    loginForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      msgDiv.innerHTML = '';
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      // Remember Me logic
+      if (rememberMeCheck.checked) {
+        localStorage.setItem('rememberedEmployeeEmail', email);
+      } else {
+        localStorage.removeItem('rememberedEmployeeEmail');
+      }
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        // Fetch employee name from Firestore
+        const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+        let name = '';
+        if (userDoc.exists()) {
+          name = userDoc.data().name;
+        }
+        // Store name in localStorage for dashboard
+        localStorage.setItem('employeeName', name);
+        msgDiv.innerHTML = `<div class='alert alert-success'>Login successful! Redirecting...</div>`;
+        setTimeout(() => {
+          window.location.href = 'employee-dashboard.html';
+        }, 300);
+      } catch (error) {
+        msgDiv.innerHTML = `<div class='alert alert-danger'>${error.message}</div>`;
+      }
+    });
+    // Register
+    registerForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      msgDiv.innerHTML = '';
+      const name = document.getElementById('empName').value;
+      const email = document.getElementById('empEmail').value;
+      const password = document.getElementById('empPassword').value;
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await setDoc(doc(db, 'users', userCredential.user.uid), {
+          name,
+          email,
+          role: 'employee'
+        });
+        msgDiv.innerHTML = `<div class='alert alert-success'>Registration successful! Redirecting to dashboard...</div>`;
+        setTimeout(() => {
+          window.location.href = 'employee-dashboard.html';
+        }, 300);
+      } catch (error) {
+        msgDiv.innerHTML = `<div class='alert alert-danger'>${error.message}</div>`;
+      }
+    });
+  </script>
+</body>
+</html> 
